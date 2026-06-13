@@ -1,0 +1,56 @@
+specificationVersion: '0.1'
+id: d2l-plans-pricing
+name: D2L Brightspace API Plans and Pricing
+description: >
+  D2L Brightspace API access is available to all D2L customers and partners
+  running Brightspace Core. Pricing for Brightspace is custom-quoted based
+  on organizational size and needs. There are no separately tiered API plans;
+  API access is bundled with the Brightspace platform subscription. Partners
+  and developers may access test environments through the D2L Partner program.
+url: https://www.d2l.com/products/brightspace/
+plans:
+  - name: Brightspace Customer API Access
+    description: >
+      All D2L Brightspace customers have access to the Brightspace Learning
+      Framework REST API as part of their platform subscription. API automation
+      tools and resources are provided free of charge to customers and partners.
+      Customers work with their Brightspace Administrator for non-production
+      API testing environments.
+    contact: https://www.d2l.com/contact/
+    features:
+      - Full access to all Learning Platform (LP) API endpoints
+      - Full access to Learning Environment (LE) API endpoints
+      - ePortfolio API access
+      - Data Hub (BDS) bulk export API access
+      - IPSIS SIS integration API access
+      - OAuth 2.0 application registration
+      - Postman Collections and sample environments
+      - Access to Brightspace Developer Community
+      - SDKs for JavaScript, Java, and .NET
+    pricing:
+      model: custom-quote
+      unit: institution
+      notes: >
+        Pricing is customized based on institutional size, number of users,
+        and deployment type. Contact D2L sales for a quote.
+    pricingURL: https://www.d2l.com/contact/
+
+  - name: D2L Partner Program API Access
+    description: >
+      EdTech companies and developers building integrations with Brightspace
+      can access dedicated test server environments through the D2L Partner
+      program. Partners gain access to development sandboxes, early API
+      previews, and dedicated technical support for integration development.
+    contact: https://www.d2l.com/partners/
+    features:
+      - Dedicated Brightspace test server environment
+      - Full API access for integration development and testing
+      - Early access to new API features
+      - Partner technical support
+      - Listing in D2L partner marketplace
+    pricing:
+      model: partner-program
+      notes: >
+        Contact the D2L Partner team to inquire about joining the partner
+        program and accessing development environments.
+    pricingURL: https://www.d2l.com/partners/

@@ -1,0 +1,112 @@
+specificationVersion: '1.0'
+id: d2l-finops
+name: D2L Brightspace API FinOps
+description: >
+  Financial operations framework for D2L Brightspace API usage. Brightspace
+  API access is bundled with institutional platform subscriptions at a
+  custom-quoted price rather than metered per API call. Cost optimization
+  focuses on efficient API usage patterns within rate limit credit allocations,
+  managing integration licensing, and right-sizing Brightspace platform tiers
+  based on user counts and feature requirements.
+url: https://www.d2l.com/products/brightspace/
+framework: FinOps Framework 1.0
+alignment: FOCUS
+
+costModel:
+  type: subscription-bundled
+  description: >
+    API access is included in the Brightspace platform subscription.
+    There are no separate per-call or per-API charges. Costs are driven
+    by institutional licensing fees based on enrolled learner counts,
+    product tier selection, and any premium add-on modules.
+  billingPeriod: annual
+  pricingModel: custom-quote
+  drivers:
+    - name: Enrolled Learner Seats
+      description: >
+        Primary cost driver; Brightspace is licensed on a per-learner basis
+        or by institutional size bracket.
+    - name: Platform Tier
+      description: >
+        Feature tier selection (e.g., Core vs. premium bundles) affects
+        total subscription cost and available API feature surface.
+    - name: Premium Add-ons
+      description: >
+        Modules such as Brightspace Insights (analytics), ePortfolio,
+        and advanced Data Hub exports may carry additional licensing fees.
+    - name: Partner/Integration Licenses
+      description: >
+        Third-party integrations built by D2L partners may carry their
+        own separate licensing fees independent of the core API access.
+
+optimization:
+  strategies:
+    - name: Credit-Efficient API Design
+      description: >
+        Design integrations to minimize unnecessary API calls by caching
+        frequently-accessed resources, using bulk endpoints where available,
+        and batching operations. The 50,000 credits/minute bucket allows
+        up to 5,000 standard calls per minute; avoid polling patterns
+        that rapidly exhaust credits.
+      impact: high
+
+    - name: Data Hub for Bulk Operations
+      description: >
+        Use the Brightspace Data Hub (BDS) bulk export API rather than
+        making individual per-record API calls for large dataset needs
+        such as grade exports or enrollment reports. Bulk exports are
+        more credit-efficient and reduce API surface area complexity.
+      impact: high
+
+    - name: Webhook and Event-Driven Architecture
+      description: >
+        Where Brightspace supports it, use event-driven integrations and
+        IPSIS SIS sync rather than polling for changes, reducing the
+        volume of read API calls needed to detect state changes.
+      impact: medium
+
+    - name: OAuth 2.0 Token Caching
+      description: >
+        Cache OAuth 2.0 access tokens for their full lifetime rather than
+        requesting new tokens per API call, reducing authentication overhead
+        and associated credit consumption on token endpoints.
+      impact: low
+
+    - name: Right-Size Platform Tier
+      description: >
+        Evaluate which premium Brightspace modules are actively used and
+        align platform tier and add-on selections to actual institutional
+        usage patterns to avoid paying for unused API surface or features.
+      impact: medium
+
+allocation:
+  method: subscription-apportioned
+  description: >
+    Since Brightspace API access is bundled, costs should be allocated
+    to consuming departments or projects proportionally based on API
+    call volume, data export volume, or number of managed integrations,
+    using logs from the Brightspace Data Hub or API response headers.
+  tags:
+    - department
+    - integration-name
+    - academic-term
+    - project-code
+
+visibility:
+  metrics:
+    - name: API Credits Consumed Per Period
+      source: X-D2L-API-Credits-Consumed response headers / API logs
+      description: Track credit consumption by integration or application client.
+    - name: Data Hub Export Volume
+      source: Brightspace Data Hub API logs
+      description: Monitor bulk export frequency and data volume for cost attribution.
+    - name: Rate Limit Events (429s)
+      source: API error logs
+      description: >
+        Track 429 responses to identify integrations operating near rate
+        limits; excessive 429s indicate inefficient API usage patterns.
+    - name: Active Integration Count
+      source: Brightspace admin console
+      description: >
+        Count registered OAuth applications and active LTI integrations
+        to assess integration sprawl and licensing exposure.
