@@ -1,0 +1,38 @@
+{
+  "aid": "d2l",
+  "name": "D2L Brightspace",
+  "blogUrl": "https://www.d2l.com/blog/",
+  "lastFetched": "2026-06-13",
+  "posts": [
+    {
+      "title": "Preparing Early-Career Colleagues: Architecting Powerful First Experiences in the Age of AI",
+      "url": "https://www.d2l.com/blog/preparing-early-career-colleagues-architecting-powerful-first-experiences-in-the-age-of-ai/",
+      "category": "Employee Training"
+    },
+    {
+      "title": "Enterprise Learning: How to Build an Employee Development Strategy That Scales",
+      "url": "https://www.d2l.com/blog/enterprise-learning/",
+      "category": "Employee Training"
+    },
+    {
+      "title": "How to Create an Employee Development Plan (With Examples)",
+      "url": "https://www.d2l.com/blog/employee-development-plan/",
+      "category": "Employee Training"
+    },
+    {
+      "title": "Asynchronous vs. Synchronous Learning: How to Choose the Right Model",
+      "url": "https://www.d2l.com/blog/guide-synchronous-vs-asynchronous-learning/",
+      "category": "Higher Education"
+    },
+    {
+      "title": "Brightspace vs Docebo: How Are They Different?",
+      "url": "https://www.d2l.com/blog/brightspace-docebo/",
+      "category": "Higher Education"
+    },
+    {
+      "title": "9 Best Cloud-Based LMS Platforms for 2026: Features, Benefits and Top Picks",
+      "url": "https://www.d2l.com/blog/cloud-based-lms/",
+      "category": "Higher Education"
+    }
+  ]
+}

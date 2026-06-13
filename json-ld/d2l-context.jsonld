@@ -1,0 +1,197 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "schema": "https://schema.org/",
+    "d2l": "https://www.d2l.com/vocab/",
+    "valence": "https://docs.valence.desire2learn.com/vocab/",
+
+    "LearningManagementSystem": "schema:LearningResource",
+    "Course": "schema:Course",
+    "CourseInstance": "schema:CourseInstance",
+    "Person": "schema:Person",
+    "Organization": "schema:Organization",
+    "EducationalOrganization": "schema:EducationalOrganization",
+
+    "OrganizationalUnit": {
+      "@id": "d2l:OrganizationalUnit",
+      "@type": "@id"
+    },
+    "OrgUnitId": "d2l:orgUnitId",
+    "OrgUnitType": "d2l:orgUnitType",
+    "OrgUnitCode": "d2l:orgUnitCode",
+    "IsActive": "d2l:isActive",
+    "Path": "d2l:path",
+
+    "Enrollment": {
+      "@id": "d2l:Enrollment",
+      "@type": "@id"
+    },
+    "EnrollmentStatus": "d2l:enrollmentStatus",
+    "RoleId": "d2l:roleId",
+    "AccessExpires": "d2l:accessExpires",
+    "LastAccessed": "d2l:lastAccessed",
+
+    "User": {
+      "@id": "d2l:User",
+      "@type": "@id"
+    },
+    "UserId": "d2l:userId",
+    "Username": "d2l:username",
+    "ExternalEmail": "d2l:externalEmail",
+    "FirstName": "schema:givenName",
+    "LastName": "schema:familyName",
+    "IsActive": "d2l:isActive",
+    "OrgDefinedId": "d2l:orgDefinedId",
+
+    "GradeObject": {
+      "@id": "d2l:GradeObject",
+      "@type": "@id"
+    },
+    "GradeObjectId": "d2l:gradeObjectId",
+    "GradeObjectType": "d2l:gradeObjectType",
+    "MaxPoints": "d2l:maxPoints",
+    "CanExceedMaxPoints": "d2l:canExceedMaxPoints",
+    "Weight": "d2l:weight",
+
+    "GradeValue": {
+      "@id": "d2l:GradeValue",
+      "@type": "@id"
+    },
+    "PointsNumerator": "d2l:pointsNumerator",
+    "PointsDenominator": "d2l:pointsDenominator",
+    "DisplayedGrade": "d2l:displayedGrade",
+    "GradeObjectIdentifier": "d2l:gradeObjectIdentifier",
+
+    "Quiz": {
+      "@id": "d2l:Quiz",
+      "@type": "@id"
+    },
+    "QuizId": "d2l:quizId",
+    "AllowHints": "d2l:allowHints",
+    "DisableRightClick": "d2l:disableRightClick",
+    "TimeLimit": "d2l:timeLimit",
+
+    "Discussion": {
+      "@id": "d2l:Discussion",
+      "@type": "@id"
+    },
+    "Forum": {
+      "@id": "d2l:Forum",
+      "@type": "@id"
+    },
+    "Topic": {
+      "@id": "d2l:Topic",
+      "@type": "@id"
+    },
+
+    "ContentObject": {
+      "@id": "d2l:ContentObject",
+      "@type": "@id"
+    },
+    "ContentModuleId": "d2l:contentModuleId",
+    "ContentTopicId": "d2l:contentTopicId",
+
+    "Dropbox": {
+      "@id": "d2l:Dropbox",
+      "@type": "@id"
+    },
+    "DropboxId": "d2l:dropboxId",
+    "Submission": {
+      "@id": "d2l:Submission",
+      "@type": "@id"
+    },
+
+    "ePortfolioArtifact": {
+      "@id": "d2l:ePortfolioArtifact",
+      "@type": "@id"
+    },
+    "Reflection": {
+      "@id": "d2l:Reflection",
+      "@type": "@id"
+    },
+    "Presentation": {
+      "@id": "d2l:Presentation",
+      "@type": "@id"
+    },
+
+    "DataSet": {
+      "@id": "d2l:DataSet",
+      "@type": "@id"
+    },
+    "DataSetId": "d2l:dataSetId",
+    "PluginId": "d2l:pluginId",
+    "ExportJobId": "d2l:exportJobId",
+
+    "SISMapping": {
+      "@id": "d2l:SISMapping",
+      "@type": "@id"
+    },
+    "SISCourseSectionId": "d2l:sisCourseSelectionId",
+    "SISUserId": "d2l:sisUserId",
+
+    "Rubric": {
+      "@id": "d2l:Rubric",
+      "@type": "@id"
+    },
+    "RubricId": "d2l:rubricId",
+    "Criterion": {
+      "@id": "d2l:Criterion",
+      "@type": "@id"
+    },
+    "CriterionGroup": {
+      "@id": "d2l:CriterionGroup",
+      "@type": "@id"
+    },
+
+    "LearningOutcome": {
+      "@id": "d2l:LearningOutcome",
+      "@type": "@id"
+    },
+    "OutcomeId": "d2l:outcomeId",
+    "OutcomeDescription": "d2l:outcomeDescription",
+
+    "Checklist": {
+      "@id": "d2l:Checklist",
+      "@type": "@id"
+    },
+    "ChecklistItem": {
+      "@id": "d2l:ChecklistItem",
+      "@type": "@id"
+    },
+
+    "ReleaseCondition": {
+      "@id": "d2l:ReleaseCondition",
+      "@type": "@id"
+    },
+    "ConditionType": "d2l:conditionType",
+
+    "Award": {
+      "@id": "d2l:Award",
+      "@type": "@id"
+    },
+    "Badge": {
+      "@id": "d2l:Badge",
+      "@type": "@id"
+    },
+    "Certificate": {
+      "@id": "d2l:Certificate",
+      "@type": "@id"
+    },
+
+    "IntelligentAgent": {
+      "@id": "d2l:IntelligentAgent",
+      "@type": "@id"
+    },
+    "AgentId": "d2l:agentId",
+    "AgentAction": "d2l:agentAction",
+
+    "LTILink": {
+      "@id": "d2l:LTILink",
+      "@type": "@id"
+    },
+    "LTIToolProvider": {
+      "@id": "d2l:LTIToolProvider",
+      "@type": "@id"
+    }
+  }
+}
