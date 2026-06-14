@@ -1,0 +1,1113 @@
+"""
+D2L Brightspace GraphQL Schema
+Conceptual schema derived from the Brightspace Learning Platform (LP) and
+Learning Environment (LE) REST APIs documented at https://docs.valence.desire2learn.com/
+"""
+
+# ─── Scalars ────────────────────────────────────────────────────────────────
+
+scalar DateTime
+scalar JSON
+scalar URL
+
+# ─── Enumerations ────────────────────────────────────────────────────────────
+
+enum OrgUnitTypeCode {
+  ORGANIZATION
+  DEPARTMENT
+  SEMESTER
+  COURSE_TEMPLATE
+  COURSE_OFFERING
+  GROUP
+  SECTION
+  OTHER
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  INACTIVE
+  WITHDRAWN
+  PENDING
+}
+
+enum ContentObjectType {
+  MODULE
+  TOPIC
+  LINK
+  SCORM
+  LTI
+  VIDEO
+}
+
+enum GradeObjectType {
+  NUMERIC
+  PASS_FAIL
+  SELECTBOX
+  TEXT
+  CALCULATED
+  FORMULA
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  MARKED_FOR_REVIEW
+  ABANDONED
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  NOT_SUBMITTED
+  LATE
+  DRAFT
+}
+
+enum PostStatus {
+  PUBLISHED
+  DRAFT
+  DELETED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  MULTI_SELECT
+  WRITTEN_RESPONSE
+  FILL_IN_THE_BLANK
+  MATCHING
+  ORDERING
+  ARITHMETIC
+  SIGNIFICANT_FIGURES
+  LIKERT
+}
+
+enum TokenGrantType {
+  AUTHORIZATION_CODE
+  CLIENT_CREDENTIALS
+  REFRESH_TOKEN
+  IMPLICIT
+}
+
+# ─── Organization & Org Units ────────────────────────────────────────────────
+
+"""Top-level organization entity representing the entire Brightspace instance."""
+type Organization {
+  identifier: ID!
+  name: String!
+  timeZone: String
+  orgUnitTypeId: Int
+  created: DateTime
+  modified: DateTime
+  orgUnits: [OrgUnit!]
+  semesters: [Semester!]
+  courses: [CourseOffering!]
+}
+
+"""A node in the organizational hierarchy (department, semester, course, etc.)."""
+type OrgUnit {
+  identifier: ID!
+  name: String!
+  code: String
+  type: OrgUnitType!
+  typeCode: OrgUnitTypeCode!
+  parents: [OrgUnit!]
+  children: [OrgUnit!]
+  organization: Organization!
+  created: DateTime
+  isActive: Boolean
+  path: String
+}
+
+"""Metadata describing a category of organizational unit."""
+type OrgUnitType {
+  id: ID!
+  code: OrgUnitTypeCode!
+  name: String!
+  description: String
+  sortOrder: Int
+}
+
+# ─── Courses ─────────────────────────────────────────────────────────────────
+
+"""A reusable course template that course offerings are based on."""
+type CourseTemplate {
+  identifier: ID!
+  name: String!
+  code: String
+  description: String
+  orgUnit: OrgUnit!
+  startDate: DateTime
+  endDate: DateTime
+  isActive: Boolean
+  offerings: [CourseOffering!]
+}
+
+"""A specific instantiation of a course template within a semester."""
+type CourseOffering {
+  identifier: ID!
+  name: String!
+  code: String
+  description: String
+  template: CourseTemplate
+  semester: Semester
+  orgUnit: OrgUnit!
+  startDate: DateTime
+  endDate: DateTime
+  isActive: Boolean
+  canSelfRegister: Boolean
+  enrollments: [CourseEnrollment!]
+  content: [ContentModule!]
+  gradebook: [GradeObject!]
+  discussions: [Forum!]
+  quizzes: [Quiz!]
+  assignments: [DropboxFolder!]
+  announcements: [NewsItem!]
+  groups: [GroupCategory!]
+}
+
+"""Detailed metadata for a course offering."""
+type CourseDetails {
+  offering: CourseOffering!
+  imageUrl: URL
+  locale: String
+  forceLocale: Boolean
+  showAddressBook: Boolean
+  displayInCalendar: Boolean
+  pluginContent: JSON
+}
+
+"""A learner's or instructor's enrollment in a course offering."""
+type CourseEnrollment {
+  orgUnit: OrgUnit!
+  user: User!
+  role: Role!
+  status: EnrollmentStatus!
+  pinned: Boolean
+  accessDate: DateTime
+  enrollmentDate: DateTime
+  completionDate: DateTime
+}
+
+# ─── Semester / Term ─────────────────────────────────────────────────────────
+
+"""An academic semester or term."""
+type Semester {
+  identifier: ID!
+  name: String!
+  code: String
+  orgUnit: OrgUnit!
+  startDate: DateTime
+  endDate: DateTime
+  isActive: Boolean
+  courses: [CourseOffering!]
+}
+
+"""Alias type for an academic term, equivalent to Semester in LP API."""
+type Term {
+  identifier: ID!
+  name: String!
+  code: String
+  startDate: DateTime
+  endDate: DateTime
+  semester: Semester
+}
+
+# ─── Groups ──────────────────────────────────────────────────────────────────
+
+"""A grouping category within a course (e.g., "Project Groups")."""
+type GroupCategory {
+  groupCategoryId: ID!
+  name: String!
+  description: String
+  enrollmentStyle: String
+  enrollmentQuantity: Int
+  autoEnroll: Boolean
+  randomizeEnrollments: Boolean
+  maxUsersPerGroup: Int
+  orgUnit: OrgUnit!
+  groups: [Group!]
+}
+
+"""A specific group within a group category."""
+type Group {
+  groupId: ID!
+  name: String!
+  code: String
+  description: String
+  category: GroupCategory!
+  enrollments: [User!]
+}
+
+"""A section within a course (class section / roster section)."""
+type GroupSection {
+  sectionId: ID!
+  name: String!
+  code: String
+  description: String
+  orgUnit: OrgUnit!
+  enrollments: [User!]
+}
+
+# ─── Content ─────────────────────────────────────────────────────────────────
+
+"""A module (folder) within a course's table of contents."""
+type ContentModule {
+  id: ID!
+  title: String!
+  shortTitle: String
+  description: String
+  sequence: Int
+  isHidden: Boolean
+  isLocked: Boolean
+  startDate: DateTime
+  endDate: DateTime
+  dueDate: DateTime
+  parentModule: ContentModule
+  childModules: [ContentModule!]
+  topics: [ContentTopic!]
+  orgUnit: OrgUnit!
+}
+
+"""A leaf content item (file, link, SCORM package, etc.) within a module."""
+type ContentTopic {
+  id: ID!
+  title: String!
+  shortTitle: String
+  url: URL
+  topicType: ContentObjectType!
+  isHidden: Boolean
+  isLocked: Boolean
+  isExempt: Boolean
+  openAsExternalResource: Boolean
+  startDate: DateTime
+  endDate: DateTime
+  dueDate: DateTime
+  sequence: Int
+  parentModule: ContentModule!
+  completionType: String
+  activityId: String
+}
+
+"""A hyperlink content object within course content."""
+type ContentLink {
+  id: ID!
+  title: String!
+  url: URL!
+  target: String
+  topic: ContentTopic
+}
+
+"""Generic content object wrapper used in API responses."""
+type ContentObject {
+  id: ID!
+  title: String!
+  type: ContentObjectType!
+  module: ContentModule
+  topic: ContentTopic
+  link: ContentLink
+}
+
+# ─── Assignments / Dropbox ────────────────────────────────────────────────────
+
+"""A dropbox folder (assignment) where learners submit work."""
+type DropboxFolder {
+  id: ID!
+  name: String!
+  customInstructions: String
+  isActive: Boolean
+  totalFileCount: Int
+  totalFilesLimit: Int
+  startDate: DateTime
+  endDate: DateTime
+  dueDate: DateTime
+  categoryId: Int
+  gradeObjectId: Int
+  orgUnit: OrgUnit!
+  attachments: [ContentObject!]
+  submissions: [Submission!]
+}
+
+"""A learner's submission to a dropbox folder."""
+type Submission {
+  id: ID!
+  userId: ID!
+  submittedDate: DateTime
+  status: SubmissionStatus!
+  files: [SubmissionFile!]
+  folder: DropboxFolder!
+  feedback: SubmissionFeedback
+}
+
+"""Metadata for a file within a submission."""
+type SubmissionFile {
+  fileId: ID!
+  fileName: String!
+  fileSize: Int
+  uploadDate: DateTime
+  comment: String
+}
+
+"""Instructor feedback on a submission."""
+type SubmissionFeedback {
+  score: Float
+  feedback: String
+  rubricAssessments: [Score!]
+  returnedDate: DateTime
+  isGraded: Boolean
+}
+
+"""Full details of a submission including feedback."""
+type SubmissionDetails {
+  submission: Submission!
+  folder: DropboxFolder!
+  user: UserDetails!
+  feedback: SubmissionFeedback
+}
+
+"""An assignment entity in the broader Brightspace context."""
+type Assignment {
+  id: ID!
+  name: String!
+  instructions: String
+  dueDate: DateTime
+  maxScore: Float
+  isActive: Boolean
+  orgUnit: OrgUnit!
+  gradeObject: GradeObject
+}
+
+"""Detailed metadata for an assignment."""
+type AssignmentDetails {
+  assignment: Assignment!
+  rubric: RubricDetails
+  attachments: [ContentObject!]
+  gradeCategory: GradeObjectCategory
+}
+
+"""A folder grouping assignments within a course."""
+type Folder {
+  folderId: ID!
+  name: String!
+  orgUnit: OrgUnit!
+  assignments: [Assignment!]
+}
+
+# ─── Grades ──────────────────────────────────────────────────────────────────
+
+"""A grade item or category in the gradebook."""
+type GradeObject {
+  id: ID!
+  name: String!
+  shortName: String
+  gradeType: GradeObjectType!
+  description: String
+  maxPoints: Float
+  canExceedMaxPoints: Boolean
+  isBonus: Boolean
+  excludeFromFinalGrade: Boolean
+  gradeToPassPercentage: Float
+  weight: Float
+  activityId: String
+  categoryId: Int
+  category: GradeObjectCategory
+  orgUnit: OrgUnit!
+}
+
+"""A category that groups grade objects in the gradebook."""
+type GradeObjectCategory {
+  id: ID!
+  name: String!
+  shortName: String
+  weight: Float
+  maxPoints: Float
+  excludeFromFinalGrade: Boolean
+  distributionType: String
+  automaticZero: Boolean
+  orgUnit: OrgUnit!
+  gradeObjects: [GradeObject!]
+}
+
+"""A learner's grade value for a specific grade object."""
+type GradeValue {
+  userId: ID!
+  orgUnitId: ID!
+  gradeObject: GradeObject!
+  pointsNumerator: Float
+  pointsDenominator: Float
+  weightedNumerator: Float
+  weightedDenominator: Float
+  displayedGrade: String
+  gradeObjectIdentifier: ID!
+  graded: Boolean
+  comments: String
+  lastModified: DateTime
+}
+
+"""A learner's computed final grade for a course."""
+type FinalGrade {
+  userId: ID!
+  orgUnitId: ID!
+  pointsNumerator: Float
+  pointsDenominator: Float
+  weightedNumerator: Float
+  weightedDenominator: Float
+  gradeSchemeSymbol: String
+  displayedGrade: String
+  releaseStatus: String
+  override: FinalGradeOverride
+}
+
+"""Manual override of a final grade."""
+type FinalGradeOverride {
+  numerator: Float
+  denominator: Float
+  comments: String
+  lastModified: DateTime
+  modifiedBy: User
+}
+
+# ─── Rubrics ─────────────────────────────────────────────────────────────────
+
+"""A rubric template used for evaluating assignments or discussions."""
+type Rubric {
+  id: ID!
+  name: String!
+  description: String
+  rubricType: String
+  scoringMethod: String
+  visibility: String
+  isShared: Boolean
+  associatedTools: [String!]
+  orgUnit: OrgUnit!
+}
+
+"""Detailed rubric including criteria and levels."""
+type RubricDetails {
+  rubric: Rubric!
+  criteria: [Criterion!]!
+  levels: [RubricLevel!]!
+  initialScore: Float
+}
+
+"""A single evaluation criterion within a rubric."""
+type Criterion {
+  id: ID!
+  name: String!
+  description: String
+  feedback: String
+  outOf: Float
+  sortOrder: Int
+  levels: [CriterionLevel!]
+}
+
+"""A performance level description for a specific criterion."""
+type CriterionLevel {
+  id: ID!
+  name: String!
+  description: String
+  points: Float
+}
+
+"""A column (achievement level) in the rubric table."""
+type RubricLevel {
+  id: ID!
+  name: String!
+  description: String
+  percentage: Float
+}
+
+"""A score applied to a criterion during evaluation."""
+type Score {
+  criterionId: ID!
+  levelId: ID
+  score: Float
+  feedback: String
+}
+
+# ─── Discussions ──────────────────────────────────────────────────────────────
+
+"""A discussion forum container within a course."""
+type Forum {
+  forumId: ID!
+  name: String!
+  description: String
+  isHidden: Boolean
+  isLocked: Boolean
+  requiresApproval: Boolean
+  allowAnonymousPost: Boolean
+  startDate: DateTime
+  endDate: DateTime
+  postFirst: Boolean
+  orgUnit: OrgUnit!
+  topics: [Topic!]
+}
+
+"""A discussion topic (thread starter) within a forum."""
+type Topic {
+  topicId: ID!
+  forumId: ID!
+  name: String!
+  description: String
+  isHidden: Boolean
+  isLocked: Boolean
+  requiresApproval: Boolean
+  allowAnonymousPost: Boolean
+  startDate: DateTime
+  endDate: DateTime
+  mustPostToParticipate: Boolean
+  ratingType: String
+  gradeObjectId: Int
+  forum: Forum!
+  posts: [Post!]
+}
+
+"""A post within a discussion topic."""
+type Post {
+  postId: ID!
+  topicId: ID!
+  parentPostId: ID
+  subject: String
+  message: String!
+  postedAt: DateTime!
+  isAnonymous: Boolean
+  isDeleted: Boolean
+  status: PostStatus!
+  isPinned: Boolean
+  author: User
+  attachments: [ContentObject!]
+  replies: [Post!]
+}
+
+"""Full details for a discussion post including threading context."""
+type PostDetails {
+  post: Post!
+  topic: Topic!
+  forum: Forum!
+  thread: Thread
+}
+
+"""A thread of related discussion posts."""
+type Thread {
+  threadId: ID!
+  subject: String
+  rootPost: Post!
+  replies: [Post!]
+  lastActivityDate: DateTime
+  viewCount: Int
+  replyCount: Int
+}
+
+"""Alias for a discussion topic used in older API versions."""
+type Discussion {
+  id: ID!
+  name: String!
+  description: String
+  forum: Forum!
+  topic: Topic!
+  orgUnit: OrgUnit!
+}
+
+# ─── Announcements / News ─────────────────────────────────────────────────────
+
+"""A news item (announcement) posted in a course or organization."""
+type NewsItem {
+  newsItemId: ID!
+  title: String!
+  body: String!
+  startDate: DateTime
+  endDate: DateTime
+  isGlobal: Boolean
+  isPublished: Boolean
+  showAuthorInfo: Boolean
+  author: User
+  orgUnit: OrgUnit!
+  publishedDate: DateTime
+  createdDate: DateTime
+  modifiedDate: DateTime
+}
+
+"""Alias for a news item (used interchangeably in LP API responses)."""
+type Announcement {
+  id: ID!
+  title: String!
+  body: String!
+  orgUnit: OrgUnit!
+  publishedDate: DateTime
+  isPublished: Boolean
+  newsItem: NewsItem
+}
+
+# ─── Quizzes ─────────────────────────────────────────────────────────────────
+
+"""A quiz entity within a course."""
+type Quiz {
+  quizId: ID!
+  name: String!
+  isActive: Boolean!
+  sortOrder: Int
+  submitsToPowerConsole: Boolean
+  preventLateSubmissions: Boolean
+  allowHints: Boolean
+  description: String
+  instructions: String
+  hasAutoSetGradeItem: Boolean
+  autoSetGradeItemId: Int
+  categoryId: Int
+  password: String
+  orgUnit: OrgUnit!
+  questions: [Question!]
+  attempts: [Attempt!]
+}
+
+"""Full details for a quiz including timing and access settings."""
+type QuizDetails {
+  quiz: Quiz!
+  startDate: DateTime
+  endDate: DateTime
+  dueDate: DateTime
+  displayInCalendar: Boolean
+  timeLimitMinutes: Int
+  timeLimitEnforced: Boolean
+  lateSubmissionType: String
+  ipRestrictions: String
+  browsers: JSON
+  specialAccess: JSON
+  attemptsAllowed: Int
+  overallGradeCalculationType: String
+}
+
+"""A question within a quiz or question library."""
+type Question {
+  questionId: ID!
+  questionTypeId: Int!
+  questionType: QuestionType!
+  questionText: String!
+  difficulty: Int
+  points: Float
+  hint: String
+  feedback: String
+  isBonus: Boolean
+  isMandatory: Boolean
+  answers: [QuestionAnswer!]
+}
+
+"""An answer option for a quiz question."""
+type QuestionAnswer {
+  answerId: ID!
+  answerText: String!
+  isCorrect: Boolean
+  weight: Float
+  feedback: String
+}
+
+"""A learner's quiz attempt record."""
+type Attempt {
+  attemptId: ID!
+  quizId: ID!
+  userId: ID!
+  attemptNumber: Int!
+  score: Float
+  isGraded: Boolean
+  status: AttemptStatus!
+  startedDate: DateTime
+  completedDate: DateTime
+  quiz: Quiz!
+  user: User!
+}
+
+"""Full details for a quiz attempt including answer responses."""
+type AttemptDetails {
+  attempt: Attempt!
+  responses: [QuestionResponse!]!
+  timeSpentSeconds: Int
+  ipAddress: String
+}
+
+"""A learner's response to a single question in an attempt."""
+type QuestionResponse {
+  questionId: ID!
+  question: Question!
+  responseText: String
+  selectedAnswerIds: [ID!]
+  score: Float
+  isCorrect: Boolean
+  feedback: String
+}
+
+# ─── Surveys ──────────────────────────────────────────────────────────────────
+
+"""A survey instrument within a course."""
+type Survey {
+  surveyId: ID!
+  name: String!
+  isActive: Boolean!
+  description: String
+  instructions: String
+  isAnonymous: Boolean
+  orgUnit: OrgUnit!
+  questions: [Question!]
+}
+
+"""Full details for a survey including scheduling."""
+type SurveyDetails {
+  survey: Survey!
+  startDate: DateTime
+  endDate: DateTime
+  attemptsAllowed: Int
+  allowSaveAndContinue: Boolean
+  showInCalendar: Boolean
+}
+
+# ─── Competencies ─────────────────────────────────────────────────────────────
+
+"""A competency or learning standard tracked within Brightspace."""
+type Competency {
+  id: ID!
+  name: String!
+  description: String
+  activityId: String
+  structure: String
+  orgUnit: OrgUnit!
+  objectives: [LearningObjective!]
+}
+
+"""A specific learning objective associated with a competency."""
+type LearningObjective {
+  id: ID!
+  name: String!
+  description: String
+  notificationEnabled: Boolean
+  competency: Competency!
+  activities: [ContentObject!]
+}
+
+# ─── Users ────────────────────────────────────────────────────────────────────
+
+"""Core user record."""
+type User {
+  userId: ID!
+  userName: String!
+  externalEmail: String
+  firstName: String
+  lastName: String
+  middleName: String
+  preferredFirstName: String
+  preferredLastName: String
+  isActive: Boolean!
+  organization: Organization!
+  enrollments: [Enrollment!]
+  displayName: String
+  profileIdentifier: String
+}
+
+"""Extended user profile and account information."""
+type UserDetails {
+  user: User!
+  orgDefinedId: String
+  uniqueIdentifier: String
+  activation: UserActivation
+  locale: String
+  pronouns: String
+  biography: String
+  homepage: URL
+  socialMediaLinks: [SocialMediaLink!]
+}
+
+"""User account activation information."""
+type UserActivation {
+  isActive: Boolean!
+  activationDate: DateTime
+}
+
+"""A social media link on a user profile."""
+type SocialMediaLink {
+  platform: String!
+  url: URL!
+}
+
+"""A user's enrollment record in an org unit."""
+type Enrollment {
+  orgUnit: OrgUnit!
+  user: User!
+  role: Role!
+  status: EnrollmentStatus!
+  enrolledDate: DateTime
+  completionDate: DateTime
+  canAccess: Boolean
+  isPinned: Boolean
+}
+
+# ─── Roles ────────────────────────────────────────────────────────────────────
+
+"""A role (e.g., Learner, Instructor, Admin) in the Brightspace system."""
+type Role {
+  identifier: ID!
+  displayName: String!
+  code: String
+  description: String
+  isAdmin: Boolean
+  canSelfRegister: Boolean
+  permissions: [Permission!]
+}
+
+"""A permission granted to a role."""
+type Permission {
+  id: ID!
+  name: String!
+  description: String
+  tool: String
+  category: String
+}
+
+# ─── Locker / Files ───────────────────────────────────────────────────────────
+
+"""Personal file storage (locker) for a user."""
+type Locker {
+  lockerItemId: ID!
+  name: String!
+  size: Int
+  isFolder: Boolean!
+  children: [Locker!]
+  owner: User!
+  created: DateTime
+  modified: DateTime
+}
+
+# ─── Widgets & Home Pages ─────────────────────────────────────────────────────
+
+"""A configurable widget on a Brightspace home page."""
+type Widget {
+  widgetId: ID!
+  name: String!
+  description: String
+  widgetType: String!
+  position: Int
+  isVisible: Boolean
+  settings: JSON
+  homePage: HomePage
+}
+
+"""A home page (dashboard) configuration in Brightspace."""
+type HomePage {
+  homePageId: ID!
+  name: String!
+  description: String
+  orgUnit: OrgUnit
+  widgets: [Widget!]
+  isDefault: Boolean
+  layoutType: String
+}
+
+# ─── LTI ─────────────────────────────────────────────────────────────────────
+
+"""An LTI (Learning Tools Interoperability) tool registration."""
+type LTI {
+  ltiToolId: ID!
+  name: String!
+  description: String
+  url: URL!
+  consumerKey: String
+  secret: String
+  launchType: String
+  orgUnit: OrgUnit
+  customParameters: JSON
+  isActive: Boolean
+  version: String
+}
+
+# ─── OAuth / Auth ─────────────────────────────────────────────────────────────
+
+"""An OAuth 2.0 application registered in Brightspace."""
+type OAuth {
+  clientId: ID!
+  clientName: String!
+  description: String
+  redirectUris: [URL!]!
+  grantTypes: [TokenGrantType!]!
+  scope: String
+  isActive: Boolean
+  createdDate: DateTime
+  owner: User
+}
+
+"""An OAuth access or refresh token."""
+type Token {
+  tokenId: ID!
+  accessToken: String!
+  tokenType: String!
+  expiresIn: Int
+  refreshToken: String
+  scope: String
+  userId: ID!
+  clientId: ID!
+  issuedAt: DateTime!
+  expiresAt: DateTime
+}
+
+"""An API key for Brightspace Valence API access."""
+type APIKey {
+  keyId: ID!
+  applicationId: String!
+  appName: String!
+  userId: ID!
+  createdDate: DateTime
+  expiresDate: DateTime
+  isActive: Boolean
+}
+
+# ─── Root Operations ──────────────────────────────────────────────────────────
+
+type Query {
+  # Organization
+  organization: Organization
+  orgUnit(orgUnitId: ID!): OrgUnit
+  orgUnits(type: OrgUnitTypeCode, parentId: ID): [OrgUnit!]!
+  orgUnitTypes: [OrgUnitType!]!
+
+  # Courses
+  courseOffering(orgUnitId: ID!): CourseOffering
+  courseOfferings(semesterId: ID, templateId: ID): [CourseOffering!]!
+  courseTemplate(templateId: ID!): CourseTemplate
+  courseDetails(orgUnitId: ID!): CourseDetails
+
+  # Semesters
+  semester(semesterId: ID!): Semester
+  semesters: [Semester!]!
+  term(termId: ID!): Term
+
+  # Users
+  user(userId: ID!): User
+  userDetails(userId: ID!): UserDetails
+  users(orgUnitId: ID, roleId: ID): [User!]!
+
+  # Enrollments
+  enrollment(userId: ID!, orgUnitId: ID!): Enrollment
+  enrollments(orgUnitId: ID, userId: ID, roleId: ID): [Enrollment!]!
+  courseEnrollments(orgUnitId: ID!): [CourseEnrollment!]!
+
+  # Roles
+  role(roleId: ID!): Role
+  roles(orgUnitId: ID): [Role!]!
+
+  # Groups
+  groupCategory(orgUnitId: ID!, groupCategoryId: ID!): GroupCategory
+  groupCategories(orgUnitId: ID!): [GroupCategory!]!
+  group(orgUnitId: ID!, groupCategoryId: ID!, groupId: ID!): Group
+  groupSection(orgUnitId: ID!, sectionId: ID!): GroupSection
+
+  # Content
+  contentModule(orgUnitId: ID!, moduleId: ID!): ContentModule
+  contentModules(orgUnitId: ID!): [ContentModule!]!
+  contentTopic(orgUnitId: ID!, topicId: ID!): ContentTopic
+  tableOfContents(orgUnitId: ID!): [ContentModule!]!
+
+  # Assignments
+  dropboxFolder(orgUnitId: ID!, folderId: ID!): DropboxFolder
+  dropboxFolders(orgUnitId: ID!): [DropboxFolder!]!
+  submission(orgUnitId: ID!, folderId: ID!, submissionId: ID!): Submission
+  submissions(orgUnitId: ID!, folderId: ID!, userId: ID): [Submission!]!
+  submissionDetails(orgUnitId: ID!, folderId: ID!, submissionId: ID!): SubmissionDetails
+
+  # Grades
+  gradeObject(orgUnitId: ID!, gradeObjectId: ID!): GradeObject
+  gradeObjects(orgUnitId: ID!): [GradeObject!]!
+  gradeObjectCategory(orgUnitId: ID!, categoryId: ID!): GradeObjectCategory
+  gradeValue(orgUnitId: ID!, gradeObjectId: ID!, userId: ID!): GradeValue
+  gradeValues(orgUnitId: ID!, gradeObjectId: ID!): [GradeValue!]!
+  finalGrade(orgUnitId: ID!, userId: ID!): FinalGrade
+  finalGrades(orgUnitId: ID!): [FinalGrade!]!
+
+  # Rubrics
+  rubric(orgUnitId: ID!, rubricId: ID!): Rubric
+  rubrics(orgUnitId: ID!): [Rubric!]!
+  rubricDetails(orgUnitId: ID!, rubricId: ID!): RubricDetails
+
+  # Discussions
+  forum(orgUnitId: ID!, forumId: ID!): Forum
+  forums(orgUnitId: ID!): [Forum!]!
+  topic(orgUnitId: ID!, forumId: ID!, topicId: ID!): Topic
+  topics(orgUnitId: ID!, forumId: ID!): [Topic!]!
+  post(orgUnitId: ID!, forumId: ID!, topicId: ID!, postId: ID!): Post
+  posts(orgUnitId: ID!, forumId: ID!, topicId: ID!): [Post!]!
+  thread(orgUnitId: ID!, forumId: ID!, topicId: ID!, threadId: ID!): Thread
+
+  # Announcements
+  newsItem(orgUnitId: ID!, newsItemId: ID!): NewsItem
+  newsItems(orgUnitId: ID!): [NewsItem!]!
+
+  # Quizzes
+  quiz(orgUnitId: ID!, quizId: ID!): Quiz
+  quizzes(orgUnitId: ID!): [Quiz!]!
+  quizDetails(orgUnitId: ID!, quizId: ID!): QuizDetails
+  question(orgUnitId: ID!, quizId: ID!, questionId: ID!): Question
+  attempt(orgUnitId: ID!, quizId: ID!, attemptId: ID!): Attempt
+  attempts(orgUnitId: ID!, quizId: ID!, userId: ID): [Attempt!]!
+  attemptDetails(orgUnitId: ID!, quizId: ID!, attemptId: ID!): AttemptDetails
+
+  # Surveys
+  survey(orgUnitId: ID!, surveyId: ID!): Survey
+  surveys(orgUnitId: ID!): [Survey!]!
+  surveyDetails(orgUnitId: ID!, surveyId: ID!): SurveyDetails
+
+  # Competencies
+  competency(orgUnitId: ID!, competencyId: ID!): Competency
+  competencies(orgUnitId: ID!): [Competency!]!
+  learningObjective(orgUnitId: ID!, objectiveId: ID!): LearningObjective
+
+  # Locker
+  lockerItem(userId: ID!, lockerItemId: ID!): Locker
+  lockerContents(userId: ID!, path: String): [Locker!]!
+
+  # Widgets & Home Pages
+  widget(widgetId: ID!): Widget
+  homePage(homePageId: ID!): HomePage
+  homePages(orgUnitId: ID): [HomePage!]!
+
+  # LTI
+  ltiTool(ltiToolId: ID!): LTI
+  ltiTools(orgUnitId: ID): [LTI!]!
+
+  # Auth
+  oauthClient(clientId: ID!): OAuth
+  apiKey(keyId: ID!): APIKey
+}
+
+type Mutation {
+  # Enrollments
+  createEnrollment(orgUnitId: ID!, userId: ID!, roleId: ID!): Enrollment
+  deleteEnrollment(orgUnitId: ID!, userId: ID!): Boolean
+
+  # Users
+  createUser(userName: String!, firstName: String!, lastName: String!, externalEmail: String): User
+  updateUser(userId: ID!, firstName: String, lastName: String, externalEmail: String, isActive: Boolean): User
+
+  # Content
+  createContentModule(orgUnitId: ID!, title: String!, parentModuleId: ID): ContentModule
+  updateContentModule(orgUnitId: ID!, moduleId: ID!, title: String, isHidden: Boolean): ContentModule
+  deleteContentModule(orgUnitId: ID!, moduleId: ID!): Boolean
+  createContentTopic(orgUnitId: ID!, moduleId: ID!, title: String!, url: URL, topicType: ContentObjectType!): ContentTopic
+
+  # Grades
+  updateGradeValue(orgUnitId: ID!, gradeObjectId: ID!, userId: ID!, pointsNumerator: Float, comments: String): GradeValue
+  updateFinalGrade(orgUnitId: ID!, userId: ID!, numerator: Float, comments: String): FinalGrade
+
+  # Discussions
+  createForum(orgUnitId: ID!, name: String!, description: String): Forum
+  createTopic(orgUnitId: ID!, forumId: ID!, name: String!, description: String): Topic
+  createPost(orgUnitId: ID!, forumId: ID!, topicId: ID!, message: String!, parentPostId: ID): Post
+  deletePost(orgUnitId: ID!, forumId: ID!, topicId: ID!, postId: ID!): Boolean
+
+  # Announcements
+  createNewsItem(orgUnitId: ID!, title: String!, body: String!, startDate: DateTime, endDate: DateTime): NewsItem
+  updateNewsItem(orgUnitId: ID!, newsItemId: ID!, title: String, body: String, isPublished: Boolean): NewsItem
+  deleteNewsItem(orgUnitId: ID!, newsItemId: ID!): Boolean
+
+  # Submissions / Feedback
+  updateSubmissionFeedback(orgUnitId: ID!, folderId: ID!, submissionId: ID!, score: Float, feedback: String): SubmissionFeedback
+
+  # Groups
+  createGroupCategory(orgUnitId: ID!, name: String!, description: String, maxUsersPerGroup: Int): GroupCategory
+  createGroup(orgUnitId: ID!, groupCategoryId: ID!, name: String!): Group
+  enrollUserInGroup(orgUnitId: ID!, groupCategoryId: ID!, groupId: ID!, userId: ID!): Boolean
+}
