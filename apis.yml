@@ -139,6 +139,8 @@ apis:
   - type: Documentation
     url: https://docs.valence.desire2learn.com/reference.html
 common:
+- type: DomainSecurity
+  url: security/d2l-domain-security.yml
 - type: Website
   url: https://www.d2l.com/
 - type: Documentation
