@@ -37,6 +37,22 @@ tags:
 - E-Learning
 - Courses
 - Grades
+- User
+- Enrollments
+- Quizzes
+- Discussions
+- Learning Outcomes
+- ePortfolio
+- SIS Integration
+- LTI
+tags_raw:
+- Learning Management System
+- LMS
+- Education Technology
+- EdTech
+- E-Learning
+- Courses
+- Grades
 - Users
 - Enrollments
 - Quizzes
@@ -58,6 +74,12 @@ apis:
   humanURL: https://docs.valence.desire2learn.com/reference.html
   baseURL: https://{yourBrightspaceHost}/d2l/api/lp
   tags:
+  - User
+  - Enrollments
+  - Roles
+  - Organizational Units
+  - Permissions
+  tags_raw:
   - Users
   - Enrollments
   - Roles
@@ -104,6 +126,12 @@ apis:
   humanURL: https://docs.valence.desire2learn.com/reference.html
   baseURL: https://{yourBrightspaceHost}/d2l/api/eP
   tags:
+  - ePortfolio
+  - Artifacts
+  - Reflections
+  - Collection
+  - Presentations
+  tags_raw:
   - ePortfolio
   - Artifacts
   - Reflections
